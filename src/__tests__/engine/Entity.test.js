@@ -194,7 +194,25 @@ describe('Entity', () => {
   describe('Destruction', () => {
     it('should destroy entity and clean up components', () => {
       const component1 = new MockComponent('Component1');
-      const component2 = new MockComponent('Component2');
+      
+      // Create a different component type to avoid collision
+      class AnotherMockComponent extends Component {
+        constructor(name = 'AnotherMockComponent') {
+          super();
+          this.name = name;
+          this.onAttachCalled = false;
+          this.onDetachCalled = false;
+        }
+
+        onAttach(entity) {
+          this.onAttachCalled = true;
+        }
+
+        onDetach(entity) {
+          this.onDetachCalled = true;
+        }
+      }
+      const component2 = new AnotherMockComponent('Component2');
       
       entity.addComponent(component1);
       entity.addComponent(component2);
