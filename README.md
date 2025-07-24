@@ -1,8 +1,9 @@
-# Dynamic Game Engine with LLM Integration
+# Dynamic Game Engine with LLM Integration Called open World.
 
 A research project that creates a dynamic game engine using LLMs to modify gameplay in real-time based on natural language descriptions.
 
 ## 🎮 Concept
+
 
 This project enables users to:
 - Start with a default 2D platformer game world
