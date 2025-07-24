@@ -124,7 +124,15 @@ describe('Entity', () => {
 
     it('should get all components', () => {
       const component1 = new MockComponent('Component1');
-      const component2 = new MockComponent('Component2');
+      
+      // Create a different component type to avoid collision
+      class AnotherMockComponent extends Component {
+        constructor(name = 'AnotherMockComponent') {
+          super();
+          this.name = name;
+        }
+      }
+      const component2 = new AnotherMockComponent('Component2');
       
       entity.addComponent(component1);
       entity.addComponent(component2);
