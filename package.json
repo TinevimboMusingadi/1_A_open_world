@@ -40,11 +40,7 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "extensionsToTreatAsEsm": [".js"],
-    "globals": {
-      "__dirname": true
-    },
-    "transform": {},
+    "preset": "jest-node-esm",
     "collectCoverageFrom": [
       "src/**/*.js",
       "!src/**/*.test.js",
