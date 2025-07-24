@@ -264,7 +264,7 @@ describe('GameContextBuilder', () => {
     });
 
     it('should detect visual references', () => {
-      const components = contextBuilder.extractComponentReferences('Make it red and bigger');
+      const components = contextBuilder.extractComponentReferences('Change the color and size');
       
       expect(components).toContain('RenderComponent');
     });

@@ -1,22 +1,20 @@
 import { GeminiClient } from '../../llm/GeminiClient.js';
 
 // Mock the Google Generative AI
-jest.mock('@google/generative-ai', () => {
-  return {
-    GoogleGenerativeAI: jest.fn().mockImplementation(() => ({
-      getGenerativeModel: jest.fn().mockReturnValue({
-        generateContent: jest.fn()
-      })
-    }))
-  };
-});
+jest.mock('@google/generative-ai', () => ({
+  GoogleGenerativeAI: jest.fn().mockImplementation(() => ({
+    getGenerativeModel: jest.fn().mockReturnValue({
+      generateContent: jest.fn()
+    })
+  }))
+}));
 
 describe('GeminiClient', () => {
   let client;
   let mockModel;
   let mockGenAI;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset mocks
     jest.clearAllMocks();
     
@@ -29,8 +27,8 @@ describe('GeminiClient', () => {
       getGenerativeModel: jest.fn().mockReturnValue(mockModel)
     };
 
-    // Mock the GoogleGenerativeAI constructor
-    const { GoogleGenerativeAI } = require('@google/generative-ai');
+    // Mock the GoogleGenerativeAI constructor  
+    const { GoogleGenerativeAI } = await import('@google/generative-ai');
     GoogleGenerativeAI.mockReturnValue(mockGenAI);
 
     // Create client instance
