@@ -241,7 +241,9 @@ describe('Component', () => {
 
     it('should handle clone of components with circular references', () => {
       // This tests the JSON parse/stringify approach to cloning
-      component.circularRef = component; // Create circular reference
+      const circularObj = { a: 1 };
+      circularObj.self = circularObj; // Create circular reference
+      component.circularRef = circularObj;
       
       expect(() => {
         component.clone();

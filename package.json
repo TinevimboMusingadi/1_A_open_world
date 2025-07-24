@@ -40,7 +40,6 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "preset": "jest-node-esm",
     "collectCoverageFrom": [
       "src/**/*.js",
       "!src/**/*.test.js",

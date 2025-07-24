@@ -23,7 +23,7 @@ export class Entity {
    * @returns {Entity} - Returns this entity for method chaining
    */
   addComponent(component) {
-    if (!component || !component.constructor.name) {
+    if (!component || typeof component !== 'object' || !component.constructor || !component.constructor.name) {
       throw new Error('Invalid component: must have a constructor name');
     }
 
