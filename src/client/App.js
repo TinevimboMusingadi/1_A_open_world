@@ -230,29 +230,37 @@ function App() {
             className="flex-1"
           />
           
-          {/* Bottom Panel Tabs */}
-          <div className="border-t border-white border-opacity-10">
-            <div className="flex">
-              <button
-                className={`px-4 py-2 text-sm font-medium transition ${
-                  activePanel === 'chat'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-muted hover:text-primary hover:bg-panel'
-                }`}
-                onClick={() => setActivePanel('chat')}
-              >
-                💬 AI Chat
-              </button>
-              <button
-                className={`px-4 py-2 text-sm font-medium transition ${
-                  activePanel === 'entities'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-muted hover:text-primary hover:bg-panel'
-                }`}
-                onClick={() => setActivePanel('entities')}
-              >
-                🎯 Entities ({gameState.entities?.length || 0})
-              </button>
+          {/* Bottom Panel Tabs - Make Chat More Prominent */}
+          <div className="border-t border-white border-opacity-10 bg-gradient-to-r from-blue-900 to-purple-900 bg-opacity-20">
+            <div className="flex items-center justify-between px-4 py-1">
+              <div className="flex">
+                <button
+                  className={`px-6 py-3 text-sm font-medium transition rounded-t-lg ${
+                    activePanel === 'chat'
+                      ? 'bg-blue-600 text-white shadow-lg'
+                      : 'text-muted hover:text-primary hover:bg-panel'
+                  }`}
+                  onClick={() => setActivePanel('chat')}
+                >
+                  💬 AI Chat - Modify Game Here!
+                </button>
+                <button
+                  className={`px-4 py-3 text-sm font-medium transition rounded-t-lg ml-2 ${
+                    activePanel === 'entities'
+                      ? 'bg-blue-600 text-white shadow-lg'
+                      : 'text-muted hover:text-primary hover:bg-panel'
+                  }`}
+                  onClick={() => setActivePanel('entities')}
+                >
+                  🎯 Entities ({gameState.entities?.length || 0})
+                </button>
+              </div>
+              
+              {/* Quick Help */}
+              <div className="text-xs text-cyan-300 flex items-center gap-4">
+                <span>🎮 WASD: Move Camera</span>
+                <span>🔫 Use AI Chat to add shooter controls!</span>
+              </div>
             </div>
             
             {/* Panel Content */}
