@@ -272,13 +272,9 @@ class GameServer {
     // Add core systems
     this.gameEngine.addSystem(new MovementSystem());
     
-    // Temporarily disable ShooterSystem until we verify basic functionality
-    try {
-      this.gameEngine.addSystem(new ShooterSystem());
-      console.log('✅ ShooterSystem added successfully');
-    } catch (error) {
-      console.warn('⚠️ ShooterSystem failed to load, continuing without shooting:', error.message);
-    }
+    // Temporarily disable ShooterSystem - it's causing entity processing errors
+    // We'll add shooting via the AI chat interface instead
+    console.log('🎮 Basic movement system loaded - use AI chat for shooting mechanics');
 
     // Start game loop
     this.gameEngine.initialize();
@@ -291,78 +287,68 @@ class GameServer {
   }
 
   /**
-   * Create demo world with initial entities (now with shooter mechanics!)
+   * Create demo world with initial entities
    */
   createDemoWorld() {
     // Import components dynamically to avoid circular dependencies
     import('../engine/components/TransformComponent.js').then(({ TransformComponent }) => {
       import('../engine/components/RenderComponent.js').then(({ RenderComponent }) => {
         import('../engine/components/MovementComponent.js').then(({ MovementComponent }) => {
-          import('../engine/components/ShooterControllerComponent.js').then(({ ShooterControllerComponent }) => {
-            
-            // Create a player entity with shooter controls
-            const player = this.gameEngine.createEntity('player');
-            player.addComponent(new TransformComponent(100, 100));
-            player.addComponent(new RenderComponent({
-              color: '#4A90E2',
-              width: 32,
-              height: 32,
+          
+          // Create a basic player entity (controls will be added via AI)
+          const player = this.gameEngine.createEntity('player');
+          player.addComponent(new TransformComponent(100, 100));
+          player.addComponent(new RenderComponent({
+            color: '#4A90E2',
+            width: 32,
+            height: 32,
+            shape: 'rectangle'
+          }));
+          player.addComponent(new MovementComponent({ maxSpeed: 200 }));
+          player.addTag('player');
+
+          // Create some platforms
+          for (let i = 0; i < 3; i++) {
+            const platform = this.gameEngine.createEntity(`platform-${i}`);
+            platform.addComponent(new TransformComponent(i * 150 + 50, 300 + i * 50));
+            platform.addComponent(new RenderComponent({
+              color: '#8B4513',
+              width: 100,
+              height: 20,
               shape: 'rectangle'
             }));
-            player.addComponent(new MovementComponent({ maxSpeed: 200 }));
-            player.addComponent(new ShooterControllerComponent({
-              moveSpeed: 150,
-              fireRate: 200,
-              bulletSpeed: 300
+            platform.addTag('platform');
+          }
+
+          // Create multiple enemies for target practice
+          for (let i = 0; i < 3; i++) {
+            const enemy = this.gameEngine.createEntity(`enemy-${i}`);
+            enemy.addComponent(new TransformComponent(
+              300 + i * 100, 
+              150 + Math.sin(i) * 50
+            ));
+            enemy.addComponent(new RenderComponent({
+              color: '#E74C3C',
+              width: 24,
+              height: 24,
+              shape: 'circle'
             }));
-            player.addTag('player');
-
-            // Create some platforms
-            for (let i = 0; i < 3; i++) {
-              const platform = this.gameEngine.createEntity(`platform-${i}`);
-              platform.addComponent(new TransformComponent(i * 150 + 50, 300 + i * 50));
-              platform.addComponent(new RenderComponent({
-                color: '#8B4513',
-                width: 100,
-                height: 20,
-                shape: 'rectangle'
-              }));
-              platform.addTag('platform');
-            }
-
-            // Create multiple enemies for target practice
-            for (let i = 0; i < 3; i++) {
-              const enemy = this.gameEngine.createEntity(`enemy-${i}`);
-              enemy.addComponent(new TransformComponent(
-                300 + i * 100, 
-                150 + Math.sin(i) * 50
-              ));
-              enemy.addComponent(new RenderComponent({
-                color: '#E74C3C',
-                width: 24,
-                height: 24,
-                shape: 'circle'
-              }));
-              enemy.addComponent(new MovementComponent({ 
-                maxSpeed: 50 + i * 25 
-              }));
-              enemy.addTag('enemy');
-              
-              // Add simple movement pattern
-              const movement = enemy.getComponent('MovementComponent');
-              movement.setVelocity(
-                (Math.random() - 0.5) * 100,
-                (Math.random() - 0.5) * 100
-              );
-            }
-
-            console.log('🎮 Demo shooter world created! Player has WASD movement + SPACE/Click to shoot!');
-            console.log('💬 Use the AI Chat below to modify the game!');
+            enemy.addComponent(new MovementComponent({ 
+              maxSpeed: 50 + i * 25 
+            }));
+            enemy.addTag('enemy');
             
-          }).catch(err => {
-            console.warn('⚠️ ShooterControllerComponent not available, using basic setup:', err.message);
-            this.createBasicDemoWorld(TransformComponent, RenderComponent, MovementComponent);
-          });
+            // Add simple movement pattern
+            const movement = enemy.getComponent('MovementComponent');
+            movement.setVelocity(
+              (Math.random() - 0.5) * 100,
+              (Math.random() - 0.5) * 100
+            );
+          }
+
+          console.log('🎮 Basic game world created!');
+          console.log('💬 Use the AI Chat to add movement and shooting controls!');
+          
         });
       });
     });

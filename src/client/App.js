@@ -258,8 +258,9 @@ function App() {
               
               {/* Quick Help */}
               <div className="text-xs text-cyan-300 flex items-center gap-4">
-                <span>🎮 WASD: Move Camera</span>
-                <span>🔫 Use AI Chat to add shooter controls!</span>
+                <span>🎮 No Controls Yet - Use AI Chat Below!</span>
+                <span>💬 Type: "Add WASD movement to player"</span>
+                <span>🔫 Then: "Add shooting with spacebar"</span>
               </div>
             </div>
             
