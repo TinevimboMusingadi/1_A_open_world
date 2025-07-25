@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import io from 'socket.io-client';
-import GameCanvas from './components/GameCanvas';
-import ChatInterface from './components/ChatInterface';
-import GameControls from './components/GameControls';
-import StatsPanel from './components/StatsPanel';
-import ConnectionStatus from './components/ConnectionStatus';
-import { useSocket } from './hooks/useSocket';
-import { useGameState } from './hooks/useGameState';
+import GameCanvas from './components/GameCanvas.js';
+import ChatInterface from './components/ChatInterface.js';
+import GameControls from './components/GameControls.js';
+import StatsPanel from './components/StatsPanel.js';
+import ConnectionStatus from './components/ConnectionStatus.js';
+import { useSocket } from './hooks/useSocket.js';
+import { useGameState } from './hooks/useGameState.js';
 
 /**
  * Main App Component - Orchestrates the entire game interface
