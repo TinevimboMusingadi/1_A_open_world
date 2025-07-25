@@ -13,6 +13,7 @@ export class ShooterSystem extends System {
     this.bullets = new Map(); // bulletId -> bullet data
     this.nextBulletId = 1;
     this.maxBullets = 50; // Limit total bullets
+    this.bulletsUpdatedThisFrame = false; // Prevent multiple bullet updates per frame
     
     // Listen for bullet creation events
     if (typeof window !== 'undefined') {
@@ -26,19 +27,33 @@ export class ShooterSystem extends System {
   }
 
   process(entity, deltaTime) {
+    // Safety check: ensure entity has getComponent method
+    if (!entity || typeof entity.getComponent !== 'function') {
+      console.warn('ShooterSystem: Invalid entity received', entity);
+      return;
+    }
+
     const shooter = entity.getComponent('ShooterControllerComponent');
     const transform = entity.getComponent('TransformComponent');
     
-    if (!shooter || !transform) return;
+    // Only process if entity has both required components
+    if (!shooter || !transform) {
+      return;
+    }
 
     // Update shooter component
-    shooter.update(deltaTime);
+    try {
+      shooter.update(deltaTime);
+    } catch (error) {
+      console.warn('Error updating shooter component:', error);
+    }
     
-    // Update bullets
-    this.updateBullets(deltaTime);
-    
-    // Clean up old bullets
-    this.cleanupBullets();
+    // Update bullets (only do this once per frame, not per entity)
+    if (!this.bulletsUpdatedThisFrame) {
+      this.updateBullets(deltaTime);
+      this.cleanupBullets();
+      this.bulletsUpdatedThisFrame = true;
+    }
   }
 
   handleBulletCreation(event) {
