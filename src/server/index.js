@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import { GameEngine } from '../engine/GameEngine.js';
 import { LLMService } from '../llm/LLMService.js';
 import { MovementSystem } from '../engine/systems/MovementSystem.js';
+import { ShooterSystem } from '../engine/systems/ShooterSystem.js';
 
 // ES module __dirname equivalent
 const __filename = fileURLToPath(import.meta.url);
@@ -270,6 +271,7 @@ class GameServer {
   setupGameEngine() {
     // Add core systems
     this.gameEngine.addSystem(new MovementSystem());
+    this.gameEngine.addSystem(new ShooterSystem());
 
     // Start game loop
     this.gameEngine.initialize();
@@ -282,55 +284,111 @@ class GameServer {
   }
 
   /**
-   * Create demo world with initial entities
+   * Create demo world with initial entities (now with shooter mechanics!)
    */
   createDemoWorld() {
     // Import components dynamically to avoid circular dependencies
     import('../engine/components/TransformComponent.js').then(({ TransformComponent }) => {
       import('../engine/components/RenderComponent.js').then(({ RenderComponent }) => {
         import('../engine/components/MovementComponent.js').then(({ MovementComponent }) => {
-          
-          // Create a player entity
-          const player = this.gameEngine.createEntity('player');
-          player.addComponent(new TransformComponent(100, 100));
-          player.addComponent(new RenderComponent({
-            color: '#4A90E2',
-            width: 32,
-            height: 32,
-            shape: 'rectangle'
-          }));
-          player.addComponent(new MovementComponent({ maxSpeed: 200 }));
-          player.addTag('player');
-
-          // Create some platforms
-          for (let i = 0; i < 3; i++) {
-            const platform = this.gameEngine.createEntity(`platform-${i}`);
-            platform.addComponent(new TransformComponent(i * 150 + 50, 300 + i * 50));
-            platform.addComponent(new RenderComponent({
-              color: '#8B4513',
-              width: 100,
-              height: 20,
+          import('../engine/components/ShooterControllerComponent.js').then(({ ShooterControllerComponent }) => {
+            
+            // Create a player entity with shooter controls
+            const player = this.gameEngine.createEntity('player');
+            player.addComponent(new TransformComponent(100, 100));
+            player.addComponent(new RenderComponent({
+              color: '#4A90E2',
+              width: 32,
+              height: 32,
               shape: 'rectangle'
             }));
-            platform.addTag('platform');
-          }
+            player.addComponent(new MovementComponent({ maxSpeed: 200 }));
+            player.addComponent(new ShooterControllerComponent({
+              moveSpeed: 150,
+              fireRate: 200,
+              bulletSpeed: 300
+            }));
+            player.addTag('player');
 
-          // Create an enemy
-          const enemy = this.gameEngine.createEntity('enemy');
-          enemy.addComponent(new TransformComponent(300, 200));
-          enemy.addComponent(new RenderComponent({
-            color: '#E74C3C',
-            width: 24,
-            height: 24,
-            shape: 'circle'
-          }));
-          enemy.addComponent(new MovementComponent({ maxSpeed: 100 }));
-          enemy.addTag('enemy');
+            // Create some platforms
+            for (let i = 0; i < 3; i++) {
+              const platform = this.gameEngine.createEntity(`platform-${i}`);
+              platform.addComponent(new TransformComponent(i * 150 + 50, 300 + i * 50));
+              platform.addComponent(new RenderComponent({
+                color: '#8B4513',
+                width: 100,
+                height: 20,
+                shape: 'rectangle'
+              }));
+              platform.addTag('platform');
+            }
 
-          console.log('Demo world created with player, platforms, and enemy');
+            // Create multiple enemies for target practice
+            for (let i = 0; i < 3; i++) {
+              const enemy = this.gameEngine.createEntity(`enemy-${i}`);
+              enemy.addComponent(new TransformComponent(
+                300 + i * 100, 
+                150 + Math.sin(i) * 50
+              ));
+              enemy.addComponent(new RenderComponent({
+                color: '#E74C3C',
+                width: 24,
+                height: 24,
+                shape: 'circle'
+              }));
+              enemy.addComponent(new MovementComponent({ 
+                maxSpeed: 50 + i * 25 
+              }));
+              enemy.addTag('enemy');
+              
+              // Add simple movement pattern
+              const movement = enemy.getComponent('MovementComponent');
+              movement.setVelocity(
+                (Math.random() - 0.5) * 100,
+                (Math.random() - 0.5) * 100
+              );
+            }
+
+            console.log('🎮 Demo shooter world created! Player has WASD movement + SPACE/Click to shoot!');
+            console.log('💬 Use the AI Chat below to modify the game!');
+            
+          }).catch(err => {
+            console.warn('ShooterControllerComponent not available, using basic setup');
+            this.createBasicDemoWorld(TransformComponent, RenderComponent, MovementComponent);
+          });
         });
       });
     });
+  }
+
+  /**
+   * Create basic demo world (fallback if shooter components fail)
+   */
+  createBasicDemoWorld(TransformComponent, RenderComponent, MovementComponent) {
+    // Create a basic player
+    const player = this.gameEngine.createEntity('player');
+    player.addComponent(new TransformComponent(100, 100));
+    player.addComponent(new RenderComponent({
+      color: '#4A90E2',
+      width: 32,
+      height: 32,
+      shape: 'rectangle'
+    }));
+    player.addComponent(new MovementComponent({ maxSpeed: 200 }));
+    player.addTag('player');
+
+    // Create one enemy
+    const enemy = this.gameEngine.createEntity('enemy');
+    enemy.addComponent(new TransformComponent(300, 200));
+    enemy.addComponent(new RenderComponent({
+      color: '#E74C3C',
+      width: 24,
+      height: 24,
+      shape: 'circle'
+    }));
+    enemy.addTag('enemy');
+
+    console.log('Basic demo world created - use AI chat to add shooter mechanics!');
   }
 
   /**

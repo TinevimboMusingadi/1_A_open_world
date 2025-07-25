@@ -10,16 +10,16 @@ function ChatInterface({ onSendMessage, connected, className = '' }) {
   const inputRef = useRef(null);
   const historyRef = useRef(null);
 
-  // Example prompts to help users get started
+  // Example prompts to help users get started (shooter game focused)
   const examplePrompts = [
-    "Create a red enemy at position 200, 100",
-    "Make the player twice as fast",
-    "Add a green platform under the player",
-    "Change all enemies to blue circles",
-    "Create 5 random colored enemies",
-    "Make the player jump higher",
-    "Add physics to all entities",
-    "Delete all enemies"
+    "Add shooter controls to the player",
+    "Create 5 more enemies to shoot",
+    "Make bullets faster and more powerful",
+    "Change enemy colors to green",
+    "Add a rapid-fire mode",
+    "Create moving enemy patrols",
+    "Make enemies shoot back at player",
+    "Add health system and damage"
   ];
 
   const handleSubmit = (e) => {
