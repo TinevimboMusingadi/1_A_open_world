@@ -7,11 +7,13 @@
   "scripts": {
     "start": "node src/server/index.js",
     "dev": "nodemon src/server/index.js",
+    "dev:full": "concurrently \"npm run dev\" \"npm run dev:client\"",
+    "dev:client": "webpack serve --mode development --port 8080",
+    "build": "webpack --mode production",
+    "build:client": "webpack --mode production",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --watch",
-    "test:coverage": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage",
-    "build": "webpack --mode production",
-    "dev-server": "webpack serve --mode development"
+    "test:coverage": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage"
   },
   "keywords": [
     "game-engine",
@@ -44,6 +46,7 @@
     "@types/jest": "^29.5.8",
     "autoprefixer": "^10.4.21",
     "babel-loader": "^10.0.0",
+    "concurrently": "^9.2.0",
     "css-loader": "^6.11.0",
     "eslint": "^8.55.0",
     "html-webpack-plugin": "^5.6.3",
