@@ -1,3 +1,22 @@
+// Node.js compatibility polyfills
+const isNode = typeof window === 'undefined';
+
+if (isNode) {
+  // Polyfill for performance.now() in Node.js
+  global.performance = {
+    now: () => Date.now()
+  };
+  
+  // Polyfill for requestAnimationFrame in Node.js
+  global.requestAnimationFrame = (callback) => {
+    return setTimeout(callback, 1000 / 60); // 60 FPS
+  };
+  
+  global.cancelAnimationFrame = (id) => {
+    clearTimeout(id);
+  };
+}
+
 import { EntityManager } from './EntityManager.js';
 
 /**
