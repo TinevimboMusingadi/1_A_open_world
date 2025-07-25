@@ -1,4 +1,7 @@
 import { System } from '../System.js';
+import { TransformComponent } from '../components/TransformComponent.js';
+import { RenderComponent } from '../components/RenderComponent.js';
+import { MovementComponent } from '../components/MovementComponent.js';
 
 /**
  * ShooterSystem - Handles shooting mechanics and bullet management
@@ -24,6 +27,14 @@ export class ShooterSystem extends System {
   initialize(entityManager) {
     super.initialize(entityManager);
     console.log('🔫 ShooterSystem initialized');
+  }
+
+  update(deltaTime) {
+    // Reset bullet update flag for this frame
+    this.bulletsUpdatedThisFrame = false;
+    
+    // Call parent update which processes all relevant entities
+    super.update(deltaTime);
   }
 
   process(entity, deltaTime) {
@@ -75,7 +86,7 @@ export class ShooterSystem extends System {
     const bullet = this.entityManager.createEntity(bulletId);
     
     // Add Transform component
-    const transform = new (this.getComponentClass('TransformComponent'))(
+    const transform = new TransformComponent(
       bulletData.position.x,
       bulletData.position.y,
       bulletData.rotation
@@ -83,7 +94,7 @@ export class ShooterSystem extends System {
     bullet.addComponent(transform);
     
     // Add Render component (small yellow circle)
-    const render = new (this.getComponentClass('RenderComponent'))({
+    const render = new RenderComponent({
       color: '#FFD700',
       shape: 'circle',
       width: 4,
@@ -93,7 +104,7 @@ export class ShooterSystem extends System {
     bullet.addComponent(render);
     
     // Add Movement component
-    const movement = new (this.getComponentClass('MovementComponent'))({
+    const movement = new MovementComponent({
       maxSpeed: Math.sqrt(bulletData.velocity.x ** 2 + bulletData.velocity.y ** 2)
     });
     movement.setVelocity(bulletData.velocity.x, bulletData.velocity.y);
@@ -196,12 +207,10 @@ export class ShooterSystem extends System {
     const effectId = `effect_${Date.now()}`;
     const effect = this.entityManager.createEntity(effectId);
     
-    const transform = new (this.getComponentClass('TransformComponent'))(
-      position.x, position.y
-    );
+    const transform = new TransformComponent(position.x, position.y);
     effect.addComponent(transform);
     
-    const render = new (this.getComponentClass('RenderComponent'))({
+    const render = new RenderComponent({
       color: '#FF6B6B',
       shape: 'circle',
       width: 16,
@@ -237,21 +246,7 @@ export class ShooterSystem extends System {
     }
   }
 
-  // Helper to get component classes (would be better with proper DI)
-  getComponentClass(componentName) {
-    // This is a simplified approach - in a real implementation, 
-    // you'd have a proper component registry
-    switch (componentName) {
-      case 'TransformComponent':
-        return eval('TransformComponent');
-      case 'RenderComponent':
-        return eval('RenderComponent');
-      case 'MovementComponent':
-        return eval('MovementComponent');
-      default:
-        throw new Error(`Unknown component: ${componentName}`);
-    }
-  }
+
 
   getInfo() {
     return {

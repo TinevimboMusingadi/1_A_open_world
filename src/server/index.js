@@ -271,7 +271,14 @@ class GameServer {
   setupGameEngine() {
     // Add core systems
     this.gameEngine.addSystem(new MovementSystem());
-    this.gameEngine.addSystem(new ShooterSystem());
+    
+    // Temporarily disable ShooterSystem until we verify basic functionality
+    try {
+      this.gameEngine.addSystem(new ShooterSystem());
+      console.log('✅ ShooterSystem added successfully');
+    } catch (error) {
+      console.warn('⚠️ ShooterSystem failed to load, continuing without shooting:', error.message);
+    }
 
     // Start game loop
     this.gameEngine.initialize();
@@ -353,7 +360,7 @@ class GameServer {
             console.log('💬 Use the AI Chat below to modify the game!');
             
           }).catch(err => {
-            console.warn('ShooterControllerComponent not available, using basic setup');
+            console.warn('⚠️ ShooterControllerComponent not available, using basic setup:', err.message);
             this.createBasicDemoWorld(TransformComponent, RenderComponent, MovementComponent);
           });
         });
