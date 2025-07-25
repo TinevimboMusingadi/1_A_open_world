@@ -164,10 +164,19 @@ function MessageBubble({ message }) {
           text-xs mt-1 opacity-75
           ${isUser ? 'text-blue-100' : 'text-muted'}
         `}>
-          {message.timestamp.toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          })}
+          {(() => {
+            try {
+              const timestamp = message.timestamp instanceof Date 
+                ? message.timestamp 
+                : new Date(message.timestamp);
+              return timestamp.toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              });
+            } catch (error) {
+              return 'Now';
+            }
+          })()}
         </div>
       </div>
     </div>

@@ -54,26 +54,26 @@ function StatsPanel({ gameStats, gameState }) {
             <>
               <div className="flex justify-between">
                 <span>Requests:</span>
-                <span>{llm.totalRequests || 0}</span>
+                <span>{typeof llm.totalRequests === 'number' ? llm.totalRequests : (llm.totalRequests || 0)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Success Rate:</span>
                 <span className="text-success">
-                  {(llm.successRate || 0).toFixed(1)}%
+                  {typeof llm.successRate === 'number' ? llm.successRate.toFixed(1) : '0.0'}%
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>Tokens Used:</span>
-                <span>{llm.totalTokensUsed || 0}</span>
+                <span>{typeof llm.totalTokensUsed === 'number' ? llm.totalTokensUsed : (llm.totalTokensUsed || 0)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Avg Response:</span>
-                <span>{(llm.averageResponseTime || 0).toFixed(0)}ms</span>
+                <span>{typeof llm.averageResponseTime === 'number' ? llm.averageResponseTime.toFixed(0) : (llm.averageResponseTime || 0)}ms</span>
               </div>
               <div className="flex justify-between">
                 <span>Safety Blocks:</span>
                 <span className={llm.safetyViolations > 0 ? 'text-warning' : 'text-muted'}>
-                  {llm.safetyViolations || 0}
+                  {typeof llm.safetyViolations === 'number' ? llm.safetyViolations : (llm.safetyViolations || 0)}
                 </span>
               </div>
             </>

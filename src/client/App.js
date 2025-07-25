@@ -333,7 +333,7 @@ function EntityCard({ entity }) {
           <div className="mb-2">
             <span className="text-muted">Position:</span>{' '}
             <span className="font-mono">
-              ({Math.round(transform.position?.x || 0)}, {Math.round(transform.position?.y || 0)})
+              ({Math.round(Number(transform.position?.x) || 0)}, {Math.round(Number(transform.position?.y) || 0)})
             </span>
           </div>
         )}
@@ -345,7 +345,7 @@ function EntityCard({ entity }) {
               style={{ backgroundColor: render.color || '#666' }}
             />
             <span className="font-mono text-xs">
-              {render.shape} {render.width}x{render.height}
+              {String(render.shape || 'unknown')} {Number(render.width) || 0}x{Number(render.height) || 0}
             </span>
           </div>
         )}
