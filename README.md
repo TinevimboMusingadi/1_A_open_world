@@ -135,6 +135,3 @@ LLM generates: game.entities.filter(e => e.hasComponent('Enemy')).forEach(e => e
 Result: All enemy entities now move at double speed
 ```
 
-## 📝 License
-
-MIT License - This is a research project for educational purposes. 
