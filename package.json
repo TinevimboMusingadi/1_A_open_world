@@ -9,8 +9,10 @@
     "dev": "nodemon src/server/index.js",
     "dev:full": "concurrently \"npm run dev\" \"npm run dev:client\"",
     "dev:client": "webpack serve --mode development --port 8080",
-    "build": "webpack --mode production",
+    "build": "webpack --mode production && cp -r src/client/dist/* . 2>/dev/null || robocopy src\\client\\dist . /E /NFL /NDL /NJH /NJS /NC /NS /NP || true",
     "build:client": "webpack --mode production",
+    "vercel-build": "npm run build:client",
+    "vercel-dev": "vercel dev",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --watch",
     "test:coverage": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage"
