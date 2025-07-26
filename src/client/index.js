@@ -1,7 +1,56 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App.js';
 import './styles/index.css';
+
+// Detect deployment environment
+const isVercelDeployment = process.env.NODE_ENV === 'production' || 
+                          (typeof window !== 'undefined' && 
+                           (window.location.hostname.includes('vercel.app') || 
+                            window.location.hostname.includes('vercel-project')));
+
+// Dynamic import wrapper component
+function AppLoader() {
+  const [AppComponent, setAppComponent] = React.useState(null);
+  
+  React.useEffect(() => {
+    async function loadApp() {
+      try {
+        let module;
+        if (isVercelDeployment) {
+          console.log('Loading Vercel-compatible App...');
+          module = await import('./App.vercel.js');
+        } else {
+          console.log('Loading standard App with Socket.IO...');
+          module = await import('./App.js');
+        }
+        setAppComponent(() => module.default);
+      } catch (error) {
+        console.error('Failed to load App component:', error);
+        // Fallback to standard app
+        const module = await import('./App.js');
+        setAppComponent(() => module.default);
+      }
+    }
+    
+    loadApp();
+  }, []);
+  
+  if (!AppComponent) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="spinner mb-4"></div>
+          <h2 className="text-lg font-semibold mb-2">Loading Game Engine</h2>
+          <p className="text-muted">
+            {isVercelDeployment ? 'Initializing API mode...' : 'Initializing Socket.IO mode...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
+  return <AppComponent />;
+}
 
 // Error boundary for the entire app
 class ErrorBoundary extends React.Component {
@@ -74,19 +123,18 @@ const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      <AppLoader />
     </ErrorBoundary>
   </React.StrictMode>
 );
 
 // Hot module replacement for development
 if (module.hot) {
-  module.hot.accept('./App', () => {
-    const NextApp = require('./App').default;
+  module.hot.accept(['./App', './App.vercel'], () => {
     root.render(
       <React.StrictMode>
         <ErrorBoundary>
-          <NextApp />
+          <AppLoader />
         </ErrorBoundary>
       </React.StrictMode>
     );

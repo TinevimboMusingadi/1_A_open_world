@@ -3,7 +3,7 @@ import React from 'react';
 /**
  * GameControls - Basic game control buttons with gameplay instructions
  */
-function GameControls({ isRunning, onStart, onStop, onReset }) {
+function GameControls({ isRunning, onStart, onStop, onReset, disabled = false }) {
   return (
     <div className="flex items-center gap-4">
       {/* Game Controls */}
@@ -11,6 +11,7 @@ function GameControls({ isRunning, onStart, onStop, onReset }) {
         {isRunning ? (
           <button
             onClick={onStop}
+            disabled={disabled}
             className="btn btn-secondary btn-sm"
             title="Stop Game"
           >
@@ -19,6 +20,7 @@ function GameControls({ isRunning, onStart, onStop, onReset }) {
         ) : (
           <button
             onClick={onStart}
+            disabled={disabled}
             className="btn btn-success btn-sm"
             title="Start Game"
           >
@@ -28,6 +30,7 @@ function GameControls({ isRunning, onStart, onStop, onReset }) {
         
         <button
           onClick={onReset}
+          disabled={disabled}
           className="btn btn-secondary btn-sm"
           title="Reset Game"
         >

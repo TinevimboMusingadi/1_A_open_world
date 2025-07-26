@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 /**
  * ChatInterface - Natural language input for game modifications
  */
-function ChatInterface({ onSendMessage, connected, className = '' }) {
+function ChatInterface({ onSendMessage, connected, loading = false, className = '' }) {
   const [message, setMessage] = useState('');
   const [messageHistory, setMessageHistory] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -25,7 +25,7 @@ function ChatInterface({ onSendMessage, connected, className = '' }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (!message.trim() || !connected) return;
+    if (!message.trim() || !connected || loading) return;
 
     const newMessage = {
       id: Date.now(),
@@ -116,15 +116,22 @@ function ChatInterface({ onSendMessage, connected, className = '' }) {
             onChange={(e) => setMessage(e.target.value)}
             placeholder={connected ? "Describe what you want to change..." : "Connecting..."}
             className="input flex-1"
-            disabled={!connected}
+            disabled={!connected || loading}
             maxLength={500}
           />
           <button
             type="submit"
-            disabled={!message.trim() || !connected}
+            disabled={!message.trim() || !connected || loading}
             className="btn btn-primary"
           >
-            Send
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Processing
+              </span>
+            ) : (
+              'Send'
+            )}
           </button>
         </div>
         
@@ -136,6 +143,12 @@ function ChatInterface({ onSendMessage, connected, className = '' }) {
           {!connected && (
             <div className="text-xs text-error">
               ⚠️ Not connected to server
+            </div>
+          )}
+          
+          {loading && (
+            <div className="text-xs text-blue-400">
+              🤖 Processing request...
             </div>
           )}
         </div>
