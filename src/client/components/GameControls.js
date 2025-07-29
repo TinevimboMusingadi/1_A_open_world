@@ -40,10 +40,11 @@ function GameControls({ isRunning, onStart, onStop, onReset, disabled = false })
 
       {/* Gameplay Instructions */}
       <div className="text-xs text-muted border-l border-white border-opacity-20 pl-4">
-        <div className="flex items-center gap-4">
-          <span>🎮 <strong>No Controls Yet:</strong> Use AI Chat to add movement/shooting</span>
-          <span>💬 <strong>Try:</strong> "Add WASD movement to player"</span>
-          <span>🔫 <strong>Then:</strong> "Add shooting with spacebar"</span>
+        <div className="flex items-center gap-6">
+          <span>🎮 <strong>MOVE:</strong> WASD or Arrow Keys</span>
+          <span>🔫 <strong>SHOOT:</strong> SPACEBAR</span>
+          <span>🎯 <strong>GOAL:</strong> Destroy all enemies!</span>
+          <span>💬 <strong>AI CHAT:</strong> Modify gameplay with natural language</span>
         </div>
       </div>
     </div>

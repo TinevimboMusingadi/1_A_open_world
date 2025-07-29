@@ -272,9 +272,9 @@ class GameServer {
     // Add core systems
     this.gameEngine.addSystem(new MovementSystem());
     
-    // Temporarily disable ShooterSystem - it's causing entity processing errors
-    // We'll add shooting via the AI chat interface instead
-    console.log('🎮 Basic movement system loaded - use AI chat for shooting mechanics');
+    // Enable ShooterSystem for full gameplay
+    this.gameEngine.addSystem(new ShooterSystem());
+    console.log('🎮 Full game systems loaded - Movement & Shooting ready!');
 
     // Start game loop
     this.gameEngine.initialize();
@@ -294,61 +294,102 @@ class GameServer {
     import('../engine/components/TransformComponent.js').then(({ TransformComponent }) => {
       import('../engine/components/RenderComponent.js').then(({ RenderComponent }) => {
         import('../engine/components/MovementComponent.js').then(({ MovementComponent }) => {
+          import('../engine/components/PlayerControllerComponent.js').then(({ PlayerControllerComponent }) => {
+            import('../engine/components/ShooterControllerComponent.js').then(({ ShooterControllerComponent }) => {
           
-          // Create a basic player entity (controls will be added via AI)
-          const player = this.gameEngine.createEntity('player');
-          player.addComponent(new TransformComponent(100, 100));
-          player.addComponent(new RenderComponent({
-            color: '#4A90E2',
-            width: 32,
-            height: 32,
-            shape: 'rectangle'
-          }));
-          player.addComponent(new MovementComponent({ maxSpeed: 200 }));
-          player.addTag('player');
+              // Create Space Invaders style player with default controls
+              const player = this.gameEngine.createEntity('player');
+              player.addComponent(new TransformComponent(400, 550)); // Bottom center
+              player.addComponent(new RenderComponent({
+                color: '#00FF00', // Classic green player ship
+                width: 40,
+                height: 20,
+                shape: 'rectangle'
+              }));
+              player.addComponent(new MovementComponent({ 
+                maxSpeed: 300,
+                friction: 0.1 // Space-like movement
+              }));
+              
+              // Add default WASD controls
+              player.addComponent(new PlayerControllerComponent({
+                moveSpeed: 1.0,
+                keyBindings: {
+                  moveLeft: ['KeyA', 'ArrowLeft'],
+                  moveRight: ['KeyD', 'ArrowRight'],
+                  moveUp: ['KeyW', 'ArrowUp'],
+                  moveDown: ['KeyS', 'ArrowDown']
+                }
+              }));
+              
+              // Add default spacebar shooting
+              player.addComponent(new ShooterControllerComponent({
+                fireRate: 200, // Fast shooting for Space Invaders feel
+                bulletSpeed: 500,
+                shootKeys: ['Space'],
+                autoFire: false,
+                shootDirection: { x: 0, y: -1 }, // Shoot upward
+                bulletOffset: { x: 0, y: -25 }
+              }));
+              
+              player.addTag('player');
 
-          // Create some platforms
-          for (let i = 0; i < 3; i++) {
-            const platform = this.gameEngine.createEntity(`platform-${i}`);
-            platform.addComponent(new TransformComponent(i * 150 + 50, 300 + i * 50));
-            platform.addComponent(new RenderComponent({
-              color: '#8B4513',
-              width: 100,
-              height: 20,
-              shape: 'rectangle'
-            }));
-            platform.addTag('platform');
-          }
+              // Create Space Invaders enemy formation (5x3 grid)
+              for (let row = 0; row < 3; row++) {
+                for (let col = 0; col < 5; col++) {
+                  const enemy = this.gameEngine.createEntity(`enemy-${row}-${col}`);
+                  enemy.addComponent(new TransformComponent(
+                    150 + col * 80, // Spaced horizontally 
+                    100 + row * 60  // Stacked vertically
+                  ));
+                  
+                  // Different enemy types by row (like classic Space Invaders)
+                  const enemyTypes = [
+                    { color: '#FF0040', points: 30 }, // Top row: Red (hardest)
+                    { color: '#FFA500', points: 20 }, // Middle row: Orange  
+                    { color: '#FFFF00', points: 10 }  // Bottom row: Yellow (easiest)
+                  ];
+                  
+                  const enemyType = enemyTypes[row];
+                  enemy.addComponent(new RenderComponent({
+                    color: enemyType.color,
+                    width: 30,
+                    height: 20,
+                    shape: 'rectangle'
+                  }));
+                  
+                  enemy.addComponent(new MovementComponent({ 
+                    maxSpeed: 100
+                  }));
+                  enemy.addTag('enemy');
+                  
+                  // Add side-to-side movement (classic Space Invaders pattern)
+                  const movement = enemy.getComponent('MovementComponent');
+                  movement.setVelocity(50, 0); // Move right initially
+                }
+              }
 
-          // Create multiple enemies for target practice
-          for (let i = 0; i < 3; i++) {
-            const enemy = this.gameEngine.createEntity(`enemy-${i}`);
-            enemy.addComponent(new TransformComponent(
-              300 + i * 100, 
-              150 + Math.sin(i) * 50
-            ));
-            enemy.addComponent(new RenderComponent({
-              color: '#E74C3C',
-              width: 24,
-              height: 24,
-              shape: 'circle'
-            }));
-            enemy.addComponent(new MovementComponent({ 
-              maxSpeed: 50 + i * 25 
-            }));
-            enemy.addTag('enemy');
-            
-            // Add simple movement pattern
-            const movement = enemy.getComponent('MovementComponent');
-            movement.setVelocity(
-              (Math.random() - 0.5) * 100,
-              (Math.random() - 0.5) * 100
-            );
-          }
+              // Add some barriers/shields (classic Space Invaders feature)
+              for (let i = 0; i < 4; i++) {
+                const barrier = this.gameEngine.createEntity(`barrier-${i}`);
+                barrier.addComponent(new TransformComponent(
+                  100 + i * 200, // Spaced across bottom
+                  450             // Above player
+                ));
+                barrier.addComponent(new RenderComponent({
+                  color: '#00FF00',
+                  width: 60,
+                  height: 40,
+                  shape: 'rectangle'
+                }));
+                barrier.addTag('barrier');
+              }
 
-          console.log('🎮 Basic game world created!');
-          console.log('💬 Use the AI Chat to add movement and shooting controls!');
-          
+              console.log('🎮 Space Invaders game world created!');
+              console.log('🎮 Use WASD to move, SPACEBAR to shoot!');
+              
+            });
+          });
         });
       });
     });

@@ -1,233 +1,160 @@
 import { Component } from '../Component.js';
 
 /**
- * ShooterControllerComponent - Handles shooter game mechanics
- * Movement, shooting, and basic combat controls
+ * ShooterControllerComponent - Handles shooting mechanics and controls
  */
 export class ShooterControllerComponent extends Component {
   constructor(options = {}) {
     super();
     
-    // Movement settings
-    this.moveSpeed = options.moveSpeed || 150;
-    this.rotationSpeed = options.rotationSpeed || 3;
-    
-    // Shooting settings
-    this.fireRate = options.fireRate || 300; // ms between shots
-    this.lastShotTime = 0;
+    // Shooting configuration
+    this.fireRate = options.fireRate || 300; // milliseconds between shots
     this.bulletSpeed = options.bulletSpeed || 400;
-    this.canShoot = options.canShoot !== false;
+    this.shootKeys = options.shootKeys || ['Space', 'KeyF'];
+    this.autoFire = options.autoFire || false;
     
-    // Input state
-    this.inputState = {
-      moveForward: false,
-      moveBackward: false,
-      moveLeft: false,
-      moveRight: false,
-      rotateLeft: false,
-      rotateRight: false,
-      shoot: false
-    };
+    // Internal state
+    this.lastShotTime = 0;
+    this.canShoot = true;
+    this.isPressingShoot = false;
     
-    // Key bindings
-    this.keyBindings = {
-      'KeyW': 'moveForward',
-      'KeyS': 'moveBackward', 
-      'KeyA': 'moveLeft',
-      'KeyD': 'moveRight',
-      'ArrowLeft': 'rotateLeft',
-      'ArrowRight': 'rotateRight',
-      'Space': 'shoot',
-      'LeftClick': 'shoot'
-    };
+    // Input handling
+    this.keyStates = new Set();
     
-    // Event handlers (bound methods)
-    this.handleKeyDown = this.handleKeyDown.bind(this);
-    this.handleKeyUp = this.handleKeyUp.bind(this);
-    this.handleMouseDown = this.handleMouseDown.bind(this);
-    this.handleMouseUp = this.handleMouseUp.bind(this);
+    // Shooting direction (default: upward for Space Invaders style)
+    this.shootDirection = options.shootDirection || { x: 0, y: -1 };
+    this.bulletOffset = options.bulletOffset || { x: 0, y: -20 };
   }
 
   onAttach(entity) {
     super.onAttach(entity);
     
-    // Add event listeners (only in browser)
     if (typeof window !== 'undefined') {
-      window.addEventListener('keydown', this.handleKeyDown);
-      window.addEventListener('keyup', this.handleKeyUp);
-      window.addEventListener('mousedown', this.handleMouseDown);
-      window.addEventListener('mouseup', this.handleMouseUp);
+      this.setupInputListeners();
     }
   }
 
   onDetach(entity) {
     super.onDetach(entity);
     
-    // Remove event listeners
     if (typeof window !== 'undefined') {
-      window.removeEventListener('keydown', this.handleKeyDown);
-      window.removeEventListener('keyup', this.handleKeyUp);
-      window.removeEventListener('mousedown', this.handleMouseDown);
-      window.removeEventListener('mouseup', this.handleMouseUp);
+      this.removeInputListeners();
     }
   }
 
-  handleKeyDown(event) {
-    const action = this.keyBindings[event.code];
-    if (action && this.inputState.hasOwnProperty(action)) {
-      this.inputState[action] = true;
-      event.preventDefault();
-    }
+  setupInputListeners() {
+    this.keyDownHandler = (event) => {
+      if (this.shootKeys.includes(event.code)) {
+        this.keyStates.add(event.code);
+        this.isPressingShoot = true;
+        event.preventDefault();
+        
+        // Shoot immediately on keydown
+        this.tryShoot();
+      }
+    };
+    
+    this.keyUpHandler = (event) => {
+      if (this.shootKeys.includes(event.code)) {
+        this.keyStates.delete(event.code);
+        this.isPressingShoot = this.shootKeys.some(key => this.keyStates.has(key));
+      }
+    };
+    
+    window.addEventListener('keydown', this.keyDownHandler);
+    window.addEventListener('keyup', this.keyUpHandler);
   }
 
-  handleKeyUp(event) {
-    const action = this.keyBindings[event.code];
-    if (action && this.inputState.hasOwnProperty(action)) {
-      this.inputState[action] = false;
-      event.preventDefault();
-    }
-  }
-
-  handleMouseDown(event) {
-    if (event.button === 0) { // Left click
-      this.inputState.shoot = true;
-      event.preventDefault();
-    }
-  }
-
-  handleMouseUp(event) {
-    if (event.button === 0) { // Left click
-      this.inputState.shoot = false;
-      event.preventDefault();
+  removeInputListeners() {
+    if (this.keyDownHandler) {
+      window.removeEventListener('keydown', this.keyDownHandler);
+      window.removeEventListener('keyup', this.keyUpHandler);
     }
   }
 
   update(deltaTime) {
-    if (!this.enabled || !this.entity) return;
-
-    const transform = this.entity.getComponent('TransformComponent');
-    const movement = this.entity.getComponent('MovementComponent');
+    super.update(deltaTime);
     
-    if (!transform || !movement) return;
-
-    // Handle movement
-    this.handleMovement(transform, movement, deltaTime);
-    
-    // Handle rotation
-    this.handleRotation(transform, deltaTime);
-    
-    // Handle shooting
-    if (this.canShoot) {
-      this.handleShooting(transform, deltaTime);
-    }
-  }
-
-  handleMovement(transform, movement, deltaTime) {
-    let moveX = 0;
-    let moveY = 0;
-
-    // Get movement direction based on input
-    if (this.inputState.moveForward) moveY -= 1;
-    if (this.inputState.moveBackward) moveY += 1;
-    if (this.inputState.moveLeft) moveX -= 1;
-    if (this.inputState.moveRight) moveX += 1;
-
-    // Normalize diagonal movement
-    if (moveX !== 0 && moveY !== 0) {
-      moveX *= 0.707; // Math.sqrt(2) / 2
-      moveY *= 0.707;
-    }
-
-    // Apply movement speed
-    const velocityX = moveX * this.moveSpeed;
-    const velocityY = moveY * this.moveSpeed;
-
-    // Set velocity on movement component
-    movement.setVelocity(velocityX, velocityY);
-  }
-
-  handleRotation(transform, deltaTime) {
-    let rotationDelta = 0;
-
-    if (this.inputState.rotateLeft) rotationDelta -= 1;
-    if (this.inputState.rotateRight) rotationDelta += 1;
-
-    if (rotationDelta !== 0) {
-      const rotationChange = rotationDelta * this.rotationSpeed * (deltaTime / 1000);
-      transform.rotate(rotationChange);
-    }
-  }
-
-  handleShooting(transform, deltaTime) {
-    if (!this.inputState.shoot) return;
-
     const currentTime = Date.now();
-    if (currentTime - this.lastShotTime < this.fireRate) return;
-
-    this.lastShotTime = currentTime;
-    this.createBullet(transform);
+    
+    // Check if we can shoot again
+    if (currentTime - this.lastShotTime >= this.fireRate) {
+      this.canShoot = true;
+    }
+    
+    // Auto-fire if enabled and key is held
+    if (this.autoFire && this.isPressingShoot && this.canShoot) {
+      this.tryShoot();
+    }
   }
 
-  createBullet(transform) {
-    // This would typically be handled by a game system
-    // For now, we'll emit an event or call a callback
+  tryShoot() {
+    if (!this.canShoot) return false;
+    
+    const transform = this.getSiblingComponent('TransformComponent');
+    if (!transform) return false;
+    
+    // Calculate bullet spawn position
+    const spawnX = transform.position.x + this.bulletOffset.x;
+    const spawnY = transform.position.y + this.bulletOffset.y;
+    
+    // Calculate bullet velocity
+    const velocity = {
+      x: this.shootDirection.x * this.bulletSpeed,
+      y: this.shootDirection.y * this.bulletSpeed
+    };
+    
+    // Fire the bullet
+    this.fireBullet(spawnX, spawnY, velocity);
+    
+    this.canShoot = false;
+    this.lastShotTime = Date.now();
+    
+    return true;
+  }
+
+  fireBullet(x, y, velocity) {
+    // Create bullet creation event
     const bulletData = {
-      position: { ...transform.position },
-      rotation: transform.rotation,
-      velocity: {
-        x: Math.cos(transform.rotation) * this.bulletSpeed,
-        y: Math.sin(transform.rotation) * this.bulletSpeed
-      },
+      position: { x, y },
+      velocity: velocity,
+      rotation: Math.atan2(velocity.y, velocity.x),
       owner: this.entity.id
     };
-
-    // Emit bullet creation event
-    if (this.onShoot) {
-      this.onShoot(bulletData);
-    }
-
-    // Also dispatch custom event for systems to listen
+    
+    // Dispatch bullet creation event
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('shooterCreateBullet', { 
-        detail: bulletData 
-      }));
+      const event = new CustomEvent('shooterCreateBullet', {
+        detail: bulletData
+      });
+      window.dispatchEvent(event);
     }
+    
+    console.log(`🔫 ${this.entity.id} fired bullet at (${x.toFixed(1)}, ${y.toFixed(1)})`);
   }
 
-  // Utility methods
-  isMoving() {
-    return this.inputState.moveForward || 
-           this.inputState.moveBackward || 
-           this.inputState.moveLeft || 
-           this.inputState.moveRight;
+  // Set shooting direction (useful for different shooting patterns)
+  setShootDirection(x, y) {
+    this.shootDirection = { x, y };
   }
 
-  isShooting() {
-    return this.inputState.shoot;
-  }
-
-  setMoveSpeed(speed) {
-    this.moveSpeed = Math.max(0, speed);
-  }
-
-  setFireRate(rate) {
-    this.fireRate = Math.max(50, rate); // Minimum 50ms between shots
-  }
-
-  setBulletSpeed(speed) {
-    this.bulletSpeed = Math.max(100, speed);
+  // Enable/disable auto-fire
+  setAutoFire(enabled) {
+    this.autoFire = enabled;
   }
 
   toJSON() {
     return {
       ...super.toJSON(),
-      moveSpeed: this.moveSpeed,
-      rotationSpeed: this.rotationSpeed,
-      fireRate: this.fireRate,
-      bulletSpeed: this.bulletSpeed,
-      canShoot: this.canShoot,
-      isMoving: this.isMoving(),
-      isShooting: this.isShooting()
+      data: {
+        fireRate: this.fireRate,
+        bulletSpeed: this.bulletSpeed,
+        shootKeys: this.shootKeys,
+        autoFire: this.autoFire,
+        shootDirection: this.shootDirection,
+        bulletOffset: this.bulletOffset,
+        canShoot: this.canShoot
+      }
     };
   }
 } 
