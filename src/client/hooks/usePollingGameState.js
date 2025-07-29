@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useApiClient } from './useApiClient';
+import { useApiClient } from './useApiClient.js';
 
 /**
  * Custom hook for polling-based game state management (Vercel-compatible)
