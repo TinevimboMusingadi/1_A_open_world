@@ -8,9 +8,11 @@ import { useApiClient } from './hooks/useApiClient.js';
 import { usePollingGameState } from './hooks/usePollingGameState.js';
 
 /**
- * Vercel-Compatible App Component - Uses API calls instead of Socket.IO
+ * Vercel-Compatible App Component - Uses ONLY API calls (NO Socket.IO)
  */
 function App() {
+  console.log('🚀 Vercel App loaded - API mode only');
+  
   // API client and polling-based game state management
   const { 
     connected, 
@@ -30,16 +32,19 @@ function App() {
     updateGameState,
     updateStats,
     refreshGameState
-  } = usePollingGameState(2000); // Poll every 2 seconds
+  } = usePollingGameState(3000); // Poll every 3 seconds for Vercel
 
   // UI state
-  const [activePanel, setActivePanel] = useState('chat'); // 'chat', 'stats', 'entities'
+  const [activePanel, setActivePanel] = useState('chat');
   const [showStats, setShowStats] = useState(true);
   const [notifications, setNotifications] = useState([]);
 
   // Initialize connection on mount
   useEffect(() => {
-    checkHealth().catch(console.error);
+    console.log('🔌 Initializing API connection...');
+    checkHealth().catch((error) => {
+      console.error('Health check failed:', error);
+    });
   }, [checkHealth]);
 
   // Notification handlers
@@ -140,7 +145,9 @@ function App() {
         });
 
         // Refresh game state after modification
-        await refreshGameState();
+        setTimeout(() => {
+          refreshGameState();
+        }, 1000);
       } catch (error) {
         addNotification({
           type: 'error',
@@ -158,8 +165,8 @@ function App() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <div className="spinner mb-4"></div>
-          <h2 className="text-lg font-semibold mb-2">Connecting to Game Engine</h2>
-          <p className="text-muted">Establishing API connection...</p>
+          <h2 className="text-lg font-semibold mb-2">Connecting to API</h2>
+          <p className="text-muted">Initializing Vercel serverless functions...</p>
         </div>
       </div>
     );
@@ -170,15 +177,20 @@ function App() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center p-6 card">
-          <h2 className="text-lg font-semibold mb-2 text-error">Connection Failed</h2>
-          <p className="text-muted mb-4">Unable to connect to the game server</p>
+          <h2 className="text-lg font-semibold mb-2 text-error">API Connection Failed</h2>
+          <p className="text-muted mb-4">Unable to connect to the serverless API</p>
           <p className="text-xs text-muted mb-4">Error: {connectionError}</p>
-          <button 
-            className="btn btn-primary"
-            onClick={() => window.location.reload()}
-          >
-            Retry Connection
-          </button>
+          <div className="space-y-2">
+            <button 
+              className="btn btn-primary block mx-auto"
+              onClick={() => window.location.reload()}
+            >
+              Retry Connection
+            </button>
+            <p className="text-xs text-muted">
+              This app uses API calls instead of WebSockets for Vercel compatibility
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -190,8 +202,11 @@ function App() {
       <header className="flex items-center justify-between p-4 border-b border-white border-opacity-10">
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-bold">
-            🎮 Dynamic Game Engine <span className="text-xs text-cyan-300">(Vercel)</span>
+            🎮 Dynamic Game Engine
           </h1>
+          <span className="text-xs text-cyan-300 bg-blue-900 bg-opacity-30 px-2 py-1 rounded">
+            API Mode
+          </span>
           <ConnectionStatus 
             connected={connected}
             reconnecting={loading}
@@ -200,7 +215,7 @@ function App() {
           {isPolling && (
             <div className="flex items-center gap-2 text-cyan-400">
               <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-              <span className="text-xs">Polling API</span>
+              <span className="text-xs">Polling every 3s</span>
             </div>
           )}
         </div>
@@ -225,6 +240,7 @@ function App() {
             className="btn btn-secondary btn-sm"
             onClick={() => refreshGameState()}
             disabled={loading}
+            title="Manual refresh"
           >
             🔄 Refresh
           </button>
@@ -268,7 +284,7 @@ function App() {
               
               {/* Quick Help */}
               <div className="text-xs text-cyan-300 flex items-center gap-4">
-                <span>🎮 API-Based (No Socket.IO)</span>
+                <span>🌐 Vercel Serverless Mode</span>
                 <span>💬 Type: "Add WASD movement to player"</span>
                 <span>🔫 Then: "Add shooting with spacebar"</span>
               </div>
@@ -304,9 +320,10 @@ function App() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-muted text-center py-8">
-                      No entities in the game world
-                    </p>
+                    <div className="text-center py-8">
+                      <p className="text-muted mb-2">No entities in the game world</p>
+                      <p className="text-xs text-muted">Use the AI chat to create game objects!</p>
+                    </div>
                   )}
                 </div>
               )}
@@ -333,7 +350,7 @@ function App() {
   );
 }
 
-// Entity Card Component (same as original)
+// Entity Card Component
 function EntityCard({ entity }) {
   const transform = entity.components?.TransformComponent?.data;
   const render = entity.components?.RenderComponent?.data;
@@ -343,11 +360,11 @@ function EntityCard({ entity }) {
       <div className="panel-header flex items-center justify-between">
         <span className="font-mono">{entity.id}</span>
         <div className="flex gap-1">
-          {entity.tags.map(tag => (
+          {entity.tags?.map(tag => (
             <span key={tag} className="status status-info text-xs">
               {tag}
             </span>
-          ))}
+          )) || []}
         </div>
       </div>
       <div className="panel-content text-sm">
@@ -376,7 +393,7 @@ function EntityCard({ entity }) {
   );
 }
 
-// Notification Container Component (same as original)
+// Notification Container Component
 function NotificationContainer({ notifications }) {
   if (notifications.length === 0) return null;
 
@@ -389,7 +406,7 @@ function NotificationContainer({ notifications }) {
   );
 }
 
-// Individual Notification Component (same as original)
+// Individual Notification Component
 function Notification({ notification }) {
   const typeStyles = {
     success: 'border-green-500 bg-green-500 bg-opacity-10',

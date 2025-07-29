@@ -2,11 +2,12 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles/index.css';
 
-// Detect deployment environment
+// Detect deployment environment - force Vercel mode for production
 const isVercelDeployment = process.env.NODE_ENV === 'production' || 
                           (typeof window !== 'undefined' && 
                            (window.location.hostname.includes('vercel.app') || 
-                            window.location.hostname.includes('vercel-project')));
+                            window.location.hostname.includes('vercel-project') ||
+                            window.location.hostname !== 'localhost'));
 
 // Dynamic import wrapper component
 function AppLoader() {
@@ -17,10 +18,15 @@ function AppLoader() {
       try {
         let module;
         if (isVercelDeployment) {
-          console.log('Loading Vercel-compatible App...');
+          console.log('🌐 Loading Vercel-compatible App (API mode)...');
+          console.log('Environment:', { 
+            hostname: window.location.hostname, 
+            nodeEnv: process.env.NODE_ENV,
+            isVercel: isVercelDeployment 
+          });
           module = await import('./App.vercel.js');
         } else {
-          console.log('Loading standard App with Socket.IO...');
+          console.log('🔌 Loading standard App with Socket.IO...');
           module = await import('./App.js');
         }
         setAppComponent(() => module.default);
