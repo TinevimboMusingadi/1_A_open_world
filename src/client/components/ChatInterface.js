@@ -10,16 +10,16 @@ function ChatInterface({ onSendMessage, connected, loading = false, className = 
   const inputRef = useRef(null);
   const historyRef = useRef(null);
 
-  // Example prompts to help users get started (controls and gameplay)
+  // Example prompts for Space Invaders gameplay modifications
   const examplePrompts = [
-    "Add WASD movement controls to the player",
-    "Add shooting with spacebar key",
-    "Make the player move twice as fast",
-    "Create 5 more red enemies",
-    "Add bullets that destroy enemies",
-    "Make enemies move toward the player",
-    "Change player color to green",
-    "Add jump ability with space key"
+    "Make enemies move down when they hit screen edges",
+    "Add player lives system with 3 lives", 
+    "Create enemy shooting - they fire bullets downward",
+    "Add score system - points for destroying enemies",
+    "Make barriers destructible when hit by bullets",
+    "Add power-ups that make bullets spread shot",
+    "Make enemies speed up as fewer remain",
+    "Add boss enemy that takes multiple hits"
   ];
 
   const handleSubmit = (e) => {
